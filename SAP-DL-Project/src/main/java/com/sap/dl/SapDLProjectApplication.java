@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SapDlProjectApplication {
+public class SapDLProjectApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(SapDlProjectApplication.class, args);
+		SpringApplication.run(SapDLProjectApplication.class, args);
 	}
 
 }
