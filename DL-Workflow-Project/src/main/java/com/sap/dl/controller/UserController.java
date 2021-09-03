@@ -2,28 +2,46 @@ package com.sap.dl.controller;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sap.dl.config.UserException;
 import com.sap.dl.dto.User;
+import com.sap.dl.entity.UserCred;
+import com.sap.dl.repository.UserCredRepository;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
 @RestController
 public class UserController {
+	
+	@Autowired
+	UserCredRepository userCredRepository;
 
-	@PostMapping("user")
-	public User login(@RequestParam("user") String username, @RequestParam("password") String pwd) {
+	@PostMapping("userLogin")
+	public User login(@RequestBody User user) {
 		
-		String token = getJWTToken(username);
-		User user = new User();
-		user.setUser(username);
+		UserCred userCred = userCredRepository.findById(user.getUser()).orElse(null);
+		if(Objects.isNull(userCred)) {
+			throw new UserException("USER_NOT_FOUND", "User "+user.getUser()+" not found.");
+		}
+		if(user.getPwd()==null || !userCred.getPassword().equals(user.getPwd())) {
+			throw new UserException("PASSWORD_INCORRECT", "Password incorrect for user "+user.getUser());
+		}
+		if(user.getUserType()==null || !user.getUserType().equals(userCred.getUserType())) {
+			throw new UserException("TYPE_INCORRECT", "Incorrect user type for user "+user.getUser());
+		}
+		String token = getJWTToken(user.getUser());
+		user.setPwd(null);
+		user.setUserType(null);
 		user.setToken(token);		
 		return user;
 		
