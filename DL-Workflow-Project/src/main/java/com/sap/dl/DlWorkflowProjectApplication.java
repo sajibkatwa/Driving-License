@@ -27,7 +27,7 @@ public class DlWorkflowProjectApplication {
 			http.csrf().disable()
 				.addFilterAfter(new JWTAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
 				.authorizeRequests()
-				.antMatchers(HttpMethod.POST, "/userLogin").permitAll()
+				.antMatchers(HttpMethod.POST, "/user/**").permitAll()
 				.anyRequest().authenticated();
 		}
 	}

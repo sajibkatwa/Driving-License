@@ -2,7 +2,6 @@ package com.sap.dl.controller;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,37 +9,35 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sap.dl.config.UserException;
 import com.sap.dl.dto.User;
-import com.sap.dl.entity.UserCred;
-import com.sap.dl.repository.UserCredRepository;
+import com.sap.dl.entity.NewUser;
+import com.sap.dl.interfaces.UserLogin;
+import com.sap.dl.services.UserService;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
 @RestController
+@RequestMapping("/user")
 public class UserController {
+
+	@Autowired
+	private UserLogin login;
 	
 	@Autowired
-	UserCredRepository userCredRepository;
-
-	@PostMapping("userLogin")
+	private UserService userService;
+	
+	@PostMapping("/userLogin")
 	public User login(@RequestBody User user) {
-		
-		UserCred userCred = userCredRepository.findById(user.getUser()).orElse(null);
-		if(Objects.isNull(userCred)) {
-			throw new UserException("USER_NOT_FOUND", "User "+user.getUser()+" not found.");
+		if(!login.authenticate(user.getUsername(), user.getPassword(), user.getUserType())) {
+			throw new UserException("AUTHENTICATION_FAILED", "User authentication failed.");
 		}
-		if(user.getPwd()==null || !userCred.getPassword().equals(user.getPwd())) {
-			throw new UserException("PASSWORD_INCORRECT", "Password incorrect for user "+user.getUser());
-		}
-		if(user.getUserType()==null || !user.getUserType().equals(userCred.getUserType())) {
-			throw new UserException("TYPE_INCORRECT", "Incorrect user type for user "+user.getUser());
-		}
-		String token = getJWTToken(user.getUser());
-		user.setPwd(null);
+		String token = getJWTToken(user.getUsername());
+		user.setPassword(null);
 		user.setUserType(null);
 		user.setToken(token);		
 		return user;
@@ -66,5 +63,20 @@ public class UserController {
 						secretKey.getBytes()).compact();
 
 		return "Bearer " + token;
+	}
+	
+	@PostMapping("/newUser")
+	public String createUser(@RequestBody NewUser user) {
+		if(user!=null) {
+			String userId = userService.createUser(user);
+			if(userId!=null) {
+				return "User created with user id: "+userId+", password: "+user.getContactNumber()+", type: U";
+			} else {
+				throw new UserException("USER_CREATION_FAILED", "User creation failed, please reachout to support.");
+			}
+			
+		} else {
+			throw new UserException("USER_CREATION_REQUEST_EMPTY", "User creation failed, please provide sufficiant data.");
+		}
 	}
 }
