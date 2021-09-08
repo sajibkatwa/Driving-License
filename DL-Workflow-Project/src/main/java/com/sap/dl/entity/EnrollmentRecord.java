@@ -22,6 +22,7 @@ public class EnrollmentRecord {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "NEW_USER_SEQ")
     @SequenceGenerator(sequenceName = "DL_SEQ", allocationSize = 1, name = "NEW_USER_SEQ")
+	@Column(name="ENROLLMENT_ID")
 	private long enrollment_Id;
 	
 	@Column(name="ENRL_TYPE_ID")

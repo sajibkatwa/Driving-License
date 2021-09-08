@@ -18,6 +18,7 @@ public class EnrollmentType {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "NEW_USER_SEQ")
     @SequenceGenerator(sequenceName = "DL_SEQ", allocationSize = 1, name = "NEW_USER_SEQ")
+	@Column(name="TYPE_ID")
 	private long type_id;
 	
 	@Column(name="VEHICLE_ID")

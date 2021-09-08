@@ -19,6 +19,7 @@ public class UserKYC {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "NEW_USER_SEQ")
     @SequenceGenerator(sequenceName = "DL_SEQ", allocationSize = 1, name = "NEW_USER_SEQ")
+	@Column(name="KYC_ID")
 	private long kyc_id;
 	
 	@Column(name="enrollment_id")

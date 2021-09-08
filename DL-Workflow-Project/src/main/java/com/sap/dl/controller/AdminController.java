@@ -24,6 +24,7 @@ import com.sap.dl.repository.EnrollmentWorkflowRepository;
 import com.sap.dl.repository.NewUserRepository;
 import com.sap.dl.repository.UserKycRepository;
 import com.sap.dl.repository.VehicleDetailsRepository;
+import com.sap.dl.services.IssueDLService;
 
 @RestController
 @RequestMapping("/admin")
@@ -49,6 +50,9 @@ public class AdminController {
 	
 	@Autowired
 	private UserKycRepository userKycRepository;
+	
+	@Autowired
+	private IssueDLService issueDLService;
 	
 	@PostMapping("/newEnrollmentType")
 	public String addEnrollmentType(@RequestBody EnrollmentType enrollmentType) {
@@ -107,8 +111,10 @@ public class AdminController {
 					break;
 				}
 			}
-			if(isWorkflowApproved)
+			if(isWorkflowApproved) {
 				enrollmentRecordRepository.save(record);
+				issueDLService.issueDL(record);
+			}
 			else
 				throw new ProjectException("PENDING_ACTIONS", "Driving license can't be issued where workflow is pending or rejected.");
 		} else {

@@ -21,6 +21,7 @@ public class VehicleType {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "NEW_USER_SEQ")
     @SequenceGenerator(sequenceName = "DL_SEQ", allocationSize = 1, name = "NEW_USER_SEQ")
+	@Column(name="VEHICLE_ID")
 	private long vehicle_id;
 	
 	@Column(name="VEHICLE_CLASS")

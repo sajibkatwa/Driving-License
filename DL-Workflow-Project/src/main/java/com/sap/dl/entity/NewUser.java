@@ -21,6 +21,7 @@ import lombok.Data;
 public class NewUser {
 	
 	@Id
+	@Column(name="USER_ID")
 	private String user_id;
 	
 	@Column(name="SALUTATION")

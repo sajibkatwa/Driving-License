@@ -18,6 +18,7 @@ public class DLWorkflowProcess {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "NEW_USER_SEQ")
     @SequenceGenerator(sequenceName = "DL_SEQ", allocationSize = 1, name = "NEW_USER_SEQ")
+	@Column(name="PROCESS_ID")
 	private long process_id;
 	
 	@Column(name="STEPS")

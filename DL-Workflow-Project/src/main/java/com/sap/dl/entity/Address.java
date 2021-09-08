@@ -18,6 +18,7 @@ public class Address {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "NEW_USER_SEQ")
     @SequenceGenerator(sequenceName = "DL_SEQ", allocationSize = 1, name = "NEW_USER_SEQ")
+	@Column(name="ADDRESS_ID")
 	private long address_id;
 	
 	@Column(name="ADDRESS_TYPE")

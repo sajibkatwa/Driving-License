@@ -23,6 +23,7 @@ public class EnrollmentWorkflow {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "NEW_USER_SEQ")
     @SequenceGenerator(sequenceName = "DL_SEQ", allocationSize = 1, name = "NEW_USER_SEQ")
+	@Column(name="WORKFLOW_ID")
 	private long workflow_id;
 	
 	@Column(name="WF_PROCESS_ID")

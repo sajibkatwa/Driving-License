@@ -9,11 +9,15 @@ import javax.persistence.Table;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import lombok.Data;
+
 @Entity
 @Table(name="DRIVING_LICENSE")
+@Data
 public class DrivingLicense {
 	
 	@Id
+	@Column(name="LICENSE_ID")
 	private String licenseId;
 	
 	@Column(name="USER_ID")
