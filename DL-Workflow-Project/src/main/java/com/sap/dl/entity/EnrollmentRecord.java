@@ -10,6 +10,8 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import lombok.Data;
 
 @Entity
@@ -26,10 +28,11 @@ public class EnrollmentRecord {
 	private long enrollmentTypeId;
 	
 	@Column(name="ENROLLMENT_DATE")
+	@DateTimeFormat(pattern="dd/MM/yyyy")
 	private Date enrollMentdate;
 	
 	@Column(name="USER_ID")
-	private long userId;
+	private String userId;
 	
 	@Column(name="DL_STATUS")
 	private String dlStatus;

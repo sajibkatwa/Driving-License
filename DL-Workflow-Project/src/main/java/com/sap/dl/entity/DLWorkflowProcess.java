@@ -23,6 +23,9 @@ public class DLWorkflowProcess {
 	@Column(name="STEPS")
 	private String steps;
 	
-	@Column(name="VEHICLE_ID")
-	private long vehicleId;
+	@Column(name="VEHICLE_TYPE_ID")
+	private long vehicleTypeId;
+	
+	@Column(name="REQ_TYPE")
+	private String reqType;
 }

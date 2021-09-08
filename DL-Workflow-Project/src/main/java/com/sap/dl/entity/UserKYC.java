@@ -33,8 +33,14 @@ public class UserKYC {
 	@Column(name="DOC_REF_NUM")
 	private String docRefNum;
 	
+	@Column(name="FILE_NAME")
+	private String fileName;
+	
 	@Lob
 	@Column(name="DOC")
 	private byte[] doc;
+	
+	@Column(name="STATUS")
+	private String status;
 
 }

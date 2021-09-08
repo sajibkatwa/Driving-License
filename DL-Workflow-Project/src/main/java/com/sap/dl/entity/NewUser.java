@@ -1,17 +1,17 @@
 package com.sap.dl.entity;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
-import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+
+import org.springframework.format.annotation.DateTimeFormat;
 
 import lombok.Data;
 
@@ -21,9 +21,7 @@ import lombok.Data;
 public class NewUser {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "NEW_USER_SEQ")
-    @SequenceGenerator(sequenceName = "DL_SEQ", allocationSize = 1, name = "NEW_USER_SEQ")
-	private long user_id;
+	private String user_id;
 	
 	@Column(name="SALUTATION")
 	private String salutation;
@@ -36,6 +34,9 @@ public class NewUser {
 	
 	@Column(name="LAST_NAME")
 	private String lastName;
+	
+	@Column(name="F_S_NAME")
+	private String fatherOrSpouseName;
 	
 	@Column(name="GENDER")
 	private String gender;
@@ -60,6 +61,10 @@ public class NewUser {
 	
 	@Column(name="STATUS")
 	private String status;
+	
+	@Column(name="CREATED_DT")
+	@DateTimeFormat(pattern="dd/MM/yyyy")
+	private Date createdDt;
 	
 	@OneToMany(mappedBy = "userId", fetch = FetchType.LAZY)
 	@JoinColumn(name = "USER_ID")

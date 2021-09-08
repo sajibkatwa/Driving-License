@@ -21,10 +21,13 @@ public class EnrollmentType {
 	private long type_id;
 	
 	@Column(name="VEHICLE_ID")
-	private long vehicleId;
+	private long vehicleTypeId;
 	
 	@Column(name="ATTEMPTS")
 	private int attempts;
+	
+	@Column(name="DL_TYPE")
+	private String dltype;
 	
 	@Column(name="COST")
 	private double cost;

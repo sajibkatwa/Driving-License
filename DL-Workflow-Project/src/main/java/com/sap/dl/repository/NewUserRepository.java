@@ -11,11 +11,14 @@ import org.springframework.stereotype.Repository;
 import com.sap.dl.entity.NewUser;
 
 @Repository
-public interface NewUserRepository extends JpaRepository<NewUser, Long>{
+public interface NewUserRepository extends JpaRepository<NewUser, String>{
 	NewUser findByEmailAndContactNumber(String email, int contactNumber);
 	
 	@Transactional
 	@Modifying
 	@Query("update NewUser n set n.status =:status where n.user_id = :userid")
-	public void updateProfileStatus(@Param("status") String status, @Param("userid") long userid);
+	public void updateProfileStatus(@Param("status") String status, @Param("userid") String userid);
+	
+	@Query(value="SELECT nextval('DL_SEQ')", nativeQuery = true)
+	public long generateSequence();
 }

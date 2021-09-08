@@ -17,23 +17,14 @@ import lombok.Data;
 @Entity
 @Table(name="VEHICLE_DETAILS")
 @Data
-public class VehicleDetails {
+public class VehicleType {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "NEW_USER_SEQ")
     @SequenceGenerator(sequenceName = "DL_SEQ", allocationSize = 1, name = "NEW_USER_SEQ")
 	private long vehicle_id;
 	
-	@Column(name="WHEEL_NO")
-	private int numberOfWheels;
-	
-	@Column(name="ENGINE_CC")
-	private int engineCC;
-	
-	@Column(name="BRAND")
-	private String brand;
-	
-	@Column(name="MODEL")
-	private String model;
+	@Column(name="VEHICLE_CLASS")
+	private String vehicleClass;
 	
 	@OneToMany
 	@JoinColumn(name="VEHICLE_ID", referencedColumnName="VEHICLE_ID")
