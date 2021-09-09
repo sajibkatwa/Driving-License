@@ -55,11 +55,13 @@ public class UserService {
 		}
 		long seq = userRpository.generateSequence();
 		user.setUser_id("U"+seq);
+		user.setStatus("created");
+		user.setCreatedDt(new Date());
 		user = userRpository.save(user);
 		
 		UserCred cred = new UserCred();
 		cred.setUserName(user.getUser_id());
-		cred.setPassword(Integer.toString(user.getContactNumber()));
+		cred.setPassword(user.getContactNumber());
 		cred.setUserType("U");
 		userCredRepository.save(cred);
 		
@@ -77,7 +79,7 @@ public class UserService {
 			throw new ProjectException("ENROLLMENT_TYPE_INVALID", "Enrollment type: "+enrollmentRecord.getEnrollmentTypeId()+" is invalid");
 		}
 		
-		List<DLWorkflowProcess> processes = dlWorkflowProcessesRepository.findByVehicleId(type.getVehicleTypeId());
+		List<DLWorkflowProcess> processes = dlWorkflowProcessesRepository.findByVehicleTypeId(type.getVehicleTypeId());
 		if(processes==null || processes.isEmpty()) {
 			enrollmentRecordRepository.delete(enrollmentRecord);
 			throw new ProjectException("PROCESS_NOT_AVAILABLE", "Processes not defined for vehicle id: "+type.getVehicleTypeId());
@@ -87,20 +89,20 @@ public class UserService {
 		
 		NewUser user = userRpository.findById(enrollmentRecord.getUserId()).orElse(null);
 		
-		EnrollmentWorkflow defaultWorkflow = new EnrollmentWorkflow();
-		defaultWorkflow.setWfProcessId(10001); //For user profile
-		defaultWorkflow.setStatus(user.getStatus());
-		defaultWorkflow.setEnrollmentId(enrollmentRecord.getEnrollment_Id());
-		workflowList.add(defaultWorkflow);
-		
-		defaultWorkflow = new EnrollmentWorkflow();
-		defaultWorkflow.setWfProcessId(10002); //For Kyc
-		defaultWorkflow.setStatus("created");
-		defaultWorkflow.setEnrollmentId(enrollmentRecord.getEnrollment_Id());
-		workflowList.add(defaultWorkflow);
+//		EnrollmentWorkflow defaultWorkflow = new EnrollmentWorkflow();
+//		defaultWorkflow.setWfProcessId(10001); //For user profile
+//		defaultWorkflow.setStatus(user.getStatus());
+//		defaultWorkflow.setEnrollmentId(enrollmentRecord.getEnrollment_Id());
+//		workflowList.add(defaultWorkflow);
+//		
+//		defaultWorkflow = new EnrollmentWorkflow();
+//		defaultWorkflow.setWfProcessId(10002); //For Kyc
+//		defaultWorkflow.setStatus("created");
+//		defaultWorkflow.setEnrollmentId(enrollmentRecord.getEnrollment_Id());
+//		workflowList.add(defaultWorkflow);
 		
 		for(DLWorkflowProcess process : processes) {
-			if(process.getSteps().equalsIgnoreCase("DOC UPLOAD")) {
+			if(process.getStepCd().equalsIgnoreCase("DOC_UPLOAD")) {
 				UserKYC kycReq = new UserKYC();
 				kycReq.setDocFor(process.getReqType());
 				kycReq.setEnrollmentId(enrollmentRecord.getEnrollment_Id());
@@ -108,9 +110,9 @@ public class UserService {
 			} else {
 				EnrollmentWorkflow workflow = new EnrollmentWorkflow();
 				workflow.setWfProcessId(process.getProcess_id());
-				workflow.setStatus("created");
+				workflow.setStatus(process.getStepCd().equalsIgnoreCase("USER_PROF") ? user.getStatus() : "created");
 				workflow.setEnrollmentId(enrollmentRecord.getEnrollment_Id());
-				workflow.setCreatedDt(new Date());;
+				workflow.setCreatedDt(new Date());
 				workflowList.add(workflow);
 			}
 		}

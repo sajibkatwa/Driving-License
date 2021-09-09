@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -48,5 +49,8 @@ public class EnrollmentWorkflow {
 	
 	@Column(name="DL_PDF")
 	@Lob
-	private byte[] dfPDF;
+	private byte[] dlPDF;
+	
+	@Transient
+	private DLWorkflowProcess processDetails;
 }

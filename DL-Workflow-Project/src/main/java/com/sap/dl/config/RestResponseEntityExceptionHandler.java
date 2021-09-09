@@ -13,7 +13,7 @@ import com.sap.dl.dto.ErrorResponse;
 @ControllerAdvice
 public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
-	@ExceptionHandler(value = { UserException.class })
+	@ExceptionHandler(value = { UserException.class, ProjectException.class })
 	protected ResponseEntity<Object> handleConflict(ProjectException ex, WebRequest request) {
 		ErrorResponse bodyOfResponse = new ErrorResponse();
 		bodyOfResponse.setErrorCode(ex.getErrCode());

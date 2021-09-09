@@ -18,8 +18,10 @@ public interface UserKycRepository extends JpaRepository<UserKYC, Long>{
 	@Query("update UserKYC u set u.status = :status where u.kyc_id = :kycId")
 	public void updateKycStatus(@Param("kycId") long kycId, @Param("status") String status);
 	
-	@Query("select u from UserKYC where u.enrollmentId=:enrollmentId and u.status=:status")
+	@Query("select u from UserKYC u where u.enrollmentId=:enrollmentId and u.status=:status")
 	List<UserKYC> findByEnrollmentId(@Param("enrollmentId") long enrollmentId, @Param("status") String status);
 	
+	@Query("select new com.sap.dl.entity.UserKYC(u.kyc_id, u.enrollmentId, u.docFor, u.docType, u.docRefNum, u.fileName, u.status) "
+			+ "from UserKYC u where u.enrollmentId=:enrollmentId order by u.kyc_id")
 	List<UserKYC> findByEnrollmentId(long enrollmentId);
 }

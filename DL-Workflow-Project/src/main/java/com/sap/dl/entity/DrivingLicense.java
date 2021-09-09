@@ -1,13 +1,15 @@
 package com.sap.dl.entity;
 
-import java.util.Date;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
-
-import org.springframework.format.annotation.DateTimeFormat;
 
 import lombok.Data;
 
@@ -23,14 +25,18 @@ public class DrivingLicense {
 	@Column(name="USER_ID")
 	private String userId;
 	
-	@Column(name="ENROLLMENT_ID")
-	private long enrollmentId;
+//	@Column(name="ENROLLMENT_ID")
+//	private long enrollmentId;
 	
-	@Column(name="ISSUE_DT")
-	@DateTimeFormat(pattern="dd/MM/yyyy")
-	private Date issueDt;
+//	@Column(name="ISSUE_DT")
+//	@DateTimeFormat(pattern="dd/MM/yyyy")
+//	private Date issueDt;
+//	
+//	@Column(name="VALID_TILL")
+//	@DateTimeFormat(pattern="dd/MM/yyyy")
+//	private Date validTill;
 	
-	@Column(name="VALID_TILL")
-	@DateTimeFormat(pattern="dd/MM/yyyy")
-	private Date validTill;
+	@OneToMany(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
+	@JoinColumn(name = "LICENSE_ID")
+	List<EnrollmentRecord> enrollmentRecords;
 }

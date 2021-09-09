@@ -7,10 +7,14 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
-import org.springframework.format.annotation.DateTimeFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
 
@@ -28,8 +32,8 @@ public class EnrollmentRecord {
 	@Column(name="ENRL_TYPE_ID")
 	private long enrollmentTypeId;
 	
+	@Temporal(TemporalType.DATE)
 	@Column(name="ENROLLMENT_DATE")
-	@DateTimeFormat(pattern="dd/MM/yyyy")
 	private Date enrollMentdate;
 	
 	@Column(name="USER_ID")
@@ -38,7 +42,20 @@ public class EnrollmentRecord {
 	@Column(name="DL_STATUS")
 	private String dlStatus;
 	
+	@Temporal(TemporalType.DATE)
+	@Column(name="ISSUE_DT")
+	private Date dlIssueDt;
+	
+	@Temporal(TemporalType.DATE)
+	@Column(name="VALID_TILL")
+	private Date dlValidTill;
+	
 	@Column(name="COMMENTS")
 	private String comments;
+	
+	@JsonIgnore
+	@ManyToOne
+	@JoinColumn(name = "LICENSE_ID", insertable = false, updatable = false)
+	private DrivingLicense licenseDetails;
 
 }

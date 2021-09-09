@@ -10,10 +10,12 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name="USER_KYC")
 @Data
+@NoArgsConstructor
 public class UserKYC {
 	
 	@Id
@@ -44,4 +46,16 @@ public class UserKYC {
 	@Column(name="STATUS")
 	private String status;
 
+	public UserKYC(long kyc_id, long enrollmentId, String docFor, String docType, String docRefNum, String fileName,
+			String status) {
+		this.kyc_id = kyc_id;
+		this.enrollmentId = enrollmentId;
+		this.docFor = docFor;
+		this.docType = docType;
+		this.docRefNum = docRefNum;
+		this.fileName = fileName;
+		this.status = status;
+	}
+
+	
 }

@@ -1,9 +1,13 @@
 package com.sap.dl.controller;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +19,7 @@ import com.sap.dl.entity.DLWorkflowProcess;
 import com.sap.dl.entity.EnrollmentRecord;
 import com.sap.dl.entity.EnrollmentType;
 import com.sap.dl.entity.EnrollmentWorkflow;
+import com.sap.dl.entity.NewUser;
 import com.sap.dl.entity.UserKYC;
 import com.sap.dl.entity.VehicleType;
 import com.sap.dl.repository.DLWorkflowProcessesRepository;
@@ -65,20 +70,20 @@ public class AdminController {
 	public String addVehicle(@RequestBody VehicleType vehicle) {
 		
 		vehicle = vehicleDetailsRepository.save(vehicle);
-		return "Given vehicle details is add. Vehicle id: "+vehicle.getVehicle_id();
+		return "Given vehicle details is added. Vehicle id: "+vehicle.getVehicleType_id();
 	}
 	
 	@PostMapping("/defineNewProcess")
 	public String defineProcess(@RequestBody List<DLWorkflowProcess> processes) {
 		
 		dlWorkflowProcessesRepository.saveAll(processes);
-		return "Defined new processes for vehicle "+ processes.get(0).getVehicleTypeId();
+		return "Defined new processes for given vehicle";
 	}
 	
 	@PostMapping("/approveWorkflow")
 	public String approveWorkflow(@RequestBody EnrollmentWorkflow workflow) {
-
-		if(workflow.getWfProcessId()==10002) {
+		DLWorkflowProcess wfProcess = dlWorkflowProcessesRepository.findById(workflow.getWfProcessId()).orElse(null);
+		if(wfProcess.getStepCd().equalsIgnoreCase("DOC_VERIFICATION")) {
 			List<UserKYC> uploadedKyc = userKycRepository.findByEnrollmentId(workflow.getEnrollmentId());
 			for(UserKYC kyc: uploadedKyc) {
 				if(!kyc.getStatus().equals("approved")) {
@@ -91,7 +96,7 @@ public class AdminController {
 		workflow.setModifiedDt(new Date());
 		enrollmentWorkflowRepository.save(workflow);
 
-		if(workflow.getWfProcessId()==10001) {
+		if(wfProcess.getStepCd().equalsIgnoreCase("USER_PROF")) {
 			EnrollmentRecord enrollmentRecord = enrollmentRecordRepository.findById(workflow.getEnrollmentId()).orElse(null);
 			newUserRepository.updateProfileStatus(workflow.getStatus(), enrollmentRecord.getUserId());
 		}
@@ -124,10 +129,30 @@ public class AdminController {
 	}
 	
 	@PostMapping("/approveKyc")
-	public String approveKyc(@RequestParam long kycId, @RequestParam String status) {
+	public String approveKyc(@RequestBody Map<String, String> statusMap) {
 		
-		userKycRepository.updateKycStatus(kycId, status);
+		for(Map.Entry<String, String> e : statusMap.entrySet()) {
+			userKycRepository.updateKycStatus(Long.parseLong(e.getKey()), e.getValue());
+		}
 		return "Status updated";
+	}
+	
+	@GetMapping("/searchUser")
+	public List<NewUser> searchUser(@RequestParam(required = false, defaultValue = "") String firstName, 
+			@RequestParam(required = false, defaultValue = "") String middleName, 
+			@RequestParam(required = false, defaultValue = "") String lastName, 
+			@RequestParam(required = false, defaultValue = "") String dob, @RequestParam(required = false, defaultValue = "") String dlNum) throws ParseException{
+		if(!"".equalsIgnoreCase(firstName) 
+				|| !"".equalsIgnoreCase(middleName)
+				|| !"".equalsIgnoreCase(firstName)) {
+			return newUserRepository.findByName(firstName.toLowerCase(), middleName.toLowerCase(), lastName.toLowerCase());
+		} else if(!"".equalsIgnoreCase(dob)) {
+			Date dobObj = new SimpleDateFormat("dd/MM/yyyy").parse(dob);
+			return newUserRepository.findByDob(dobObj);
+		} else if(!"".equalsIgnoreCase(dlNum)) {
+			return newUserRepository.findByDrivingLicense(dlNum);
+		}
+		return null;
 	}
 	
 }

@@ -48,6 +48,6 @@ public class Address {
 	@Column(name="PINCODE")
 	private String pincode;
 	
-	@Column(name="USER_ID")
-	private String userId;
+//	@Column(name="USER_ID")
+//	private String userId;
 }

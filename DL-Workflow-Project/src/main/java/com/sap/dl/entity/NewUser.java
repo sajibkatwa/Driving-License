@@ -3,6 +3,7 @@ package com.sap.dl.entity;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -10,6 +11,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -42,14 +45,18 @@ public class NewUser {
 	@Column(name="GENDER")
 	private String gender;
 	
+	@Temporal(TemporalType.DATE)
+	@Column(name="DOB")
+	private Date dob;
+	
 	@Column(name="BLOOD_GROUP")
 	private String bloodGroup;
 	
 	@Column(name="COUNTRY_CODE")
-	private int countryCode;
+	private String countryCode;
 	
 	@Column(name="CONTACT_NUMBER")
-	private int contactNumber;
+	private String contactNumber;
 	
 	@Column(name="EMAIL")
 	private String email;
@@ -57,8 +64,8 @@ public class NewUser {
 	@Column(name="EMERGENCY_CONTACT")
 	private String emergencyContact;
 	
-	@Column(name="CONTACT_NAME")
-	private int emergencyContactNum;
+	@Column(name="CONTACT_NUM")
+	private String emergencyContactNum;
 	
 	@Column(name="STATUS")
 	private String status;
@@ -67,7 +74,7 @@ public class NewUser {
 	@DateTimeFormat(pattern="dd/MM/yyyy")
 	private Date createdDt;
 	
-	@OneToMany(mappedBy = "userId", fetch = FetchType.LAZY)
+	@OneToMany(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
 	@JoinColumn(name = "USER_ID")
 	private List<Address> addresses;
 }
