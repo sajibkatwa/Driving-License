@@ -99,12 +99,35 @@ public class AdminController {
 		workflow.setModifiedDt(new Date());
 		enrollmentWorkflowRepository.save(workflow);
 
-		if(wfProcess.getStepCd().equalsIgnoreCase("USER_PROF")) {
-			EnrollmentRecord enrollmentRecord = enrollmentRecordRepository.findById(workflow.getEnrollmentId()).orElse(null);
+		EnrollmentRecord enrollmentRecord = enrollmentRecordRepository.findById(workflow.getEnrollmentId()).orElse(null);
+		switch(wfProcess.getStepCd()) {
+		case "USER_PROF": {
 			newUserRepository.updateProfileStatus(workflow.getStatus(), enrollmentRecord.getUserId());
 		}
+		break;
+		case "WRTN_TEST":
+		case "FIELD_TEST": {
+			if(workflow.getStatus().equalsIgnoreCase("rejected")) {
+				rejectedWorkflow(wfProcess, enrollmentRecord);
+			}
+		}
+		break;
+		default:
+			break;
+		}
 		
-		return "Approved workflow";
+		if(wfProcess.getStepCd().startsWith("TRAIN") 
+				&& workflow.getStatus().equalsIgnoreCase("rejected")) {
+			rejectedWorkflow(wfProcess, enrollmentRecord);
+		}
+		
+		return "workflow status updated";
+	}
+
+	private void rejectedWorkflow(DLWorkflowProcess wfProcess, EnrollmentRecord enrollmentRecord) {
+		enrollmentRecord.setDlStatus("rejected");
+		enrollmentRecord.setComments(wfProcess.getStep()+": rejected.");
+		enrollmentRecordRepository.save(enrollmentRecord);
 	}
 	
 	@PostMapping("/updateDLStatus")
@@ -135,7 +158,7 @@ public class AdminController {
 	public String approveKyc(@PathVariable long enrollmentId, @RequestBody Map<Long, String> statusMap) {
 		List<UserKYC> uploadedKyc = userKycRepository.findByEnrollmentId(enrollmentId);
 		Set<Long> kycIdSet = uploadedKyc.stream().map(m -> m.getKyc_id()).collect(Collectors.toSet());
-		if(!statusMap.keySet().containsAll(kycIdSet)) {
+		if(!kycIdSet.containsAll(statusMap.keySet())) {
 			throw new ProjectException("ENROLMENTID_KYCID_MISMATCH", "The given kyc ids don't belong to given Enrolment id.");
 		}
 		for(Map.Entry<Long, String> e : statusMap.entrySet()) {

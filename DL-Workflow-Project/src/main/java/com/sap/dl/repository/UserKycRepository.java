@@ -24,4 +24,7 @@ public interface UserKycRepository extends JpaRepository<UserKYC, Long>{
 	@Query("select new com.sap.dl.entity.UserKYC(u.kyc_id, u.enrollmentId, u.docFor, u.docType, u.docRefNum, u.fileName, u.status) "
 			+ "from UserKYC u where u.enrollmentId=:enrollmentId order by u.kyc_id")
 	List<UserKYC> findByEnrollmentId(long enrollmentId);
+	
+	@Query("select u from UserKYC u where u.enrollmentId=:enrollmentId and u.status=:status and docFor = :docFor")
+	UserKYC findByEnrollmentIdAndDocFor(@Param("enrollmentId") long enrollmentId, @Param("status") String status, @Param("docFor") String docFor);
 }

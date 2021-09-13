@@ -8,7 +8,9 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
 
 import lombok.Data;
@@ -24,19 +26,13 @@ public class DrivingLicense {
 	
 	@Column(name="USER_ID")
 	private String userId;
-	
-//	@Column(name="ENROLLMENT_ID")
-//	private long enrollmentId;
-	
-//	@Column(name="ISSUE_DT")
-//	@DateTimeFormat(pattern="dd/MM/yyyy")
-//	private Date issueDt;
-//	
-//	@Column(name="VALID_TILL")
-//	@DateTimeFormat(pattern="dd/MM/yyyy")
-//	private Date validTill;
+
+	@Lob
+	@Column(name="DL_DOC")
+	private byte[] dlDoc;
 	
 	@OneToMany(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
 	@JoinColumn(name = "LICENSE_ID")
+	@OrderBy("dlIssueDt DESC")
 	List<EnrollmentRecord> enrollmentRecords;
 }

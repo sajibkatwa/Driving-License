@@ -2,6 +2,8 @@ package com.sap.dl.controller;
 
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +30,7 @@ import com.sap.dl.repository.EnrollmentWorkflowRepository;
 import com.sap.dl.repository.NewUserRepository;
 import com.sap.dl.repository.UserKycRepository;
 import com.sap.dl.repository.VehicleDetailsRepository;
+import com.sap.dl.services.IssueDLService;
 
 @RestController
 @RequestMapping("/data")
@@ -56,6 +59,9 @@ public class CommonController {
 	
 	@Autowired
 	private DrivingLicenseRepository drivingLicenseRepository;
+	
+	@Autowired 
+	private IssueDLService issueDLService;
 	
 	@GetMapping("/vehicleTypes")
 	public List<VehicleType> listOfVehicleTypes(){
@@ -130,5 +136,20 @@ public class CommonController {
 	public DrivingLicense dlByEnrollment(@RequestParam long enrollmentId) {
 		EnrollmentRecord record = enrollmentRecordRepository.findById(enrollmentId).orElse(null);
 		return record.getLicenseDetails();
+	}
+	
+	@GetMapping("/downloadDl")
+	@Transactional
+	public ResponseEntity<byte[]> downloadDl(@RequestParam String userId){
+		DrivingLicense dlObj = drivingLicenseRepository.findByUserId(userId);
+		byte[] dlPDFByte = null;
+		if(dlObj.getDlDoc()!=null) {
+			dlPDFByte = dlObj.getDlDoc();
+		} else {
+			dlPDFByte = issueDLService.generateDlPDF(userId, dlObj);
+		}
+		return ResponseEntity.ok()
+		        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + dlObj.getLicenseId() + ".pdf\"")
+		        .body(dlPDFByte);
 	}
 }
