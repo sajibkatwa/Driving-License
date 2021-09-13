@@ -17,6 +17,10 @@ import com.sap.dl.entity.NewUser;
 public interface NewUserRepository extends JpaRepository<NewUser, String>{
 	NewUser findByEmailAndContactNumber(String email, String contactNumber);
 	
+	NewUser findByEmail(String email);
+	
+	NewUser findByContactNumber(String contactNumber);
+	
 	@Transactional
 	@Modifying
 	@Query("update NewUser n set n.status =:status where n.user_id = :userid")

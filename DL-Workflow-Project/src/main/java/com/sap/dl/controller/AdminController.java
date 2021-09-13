@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -128,11 +129,30 @@ public class AdminController {
 		return "DL Status Updated.";
 	}
 	
-	@PostMapping("/approveKyc")
-	public String approveKyc(@RequestBody Map<String, String> statusMap) {
+	@PostMapping("/approveKyc/{enrollmentId}")
+	public String approveKyc(@PathVariable long enrollmentId, @RequestBody Map<String, String> statusMap) {
 		
 		for(Map.Entry<String, String> e : statusMap.entrySet()) {
 			userKycRepository.updateKycStatus(Long.parseLong(e.getKey()), e.getValue());
+		}
+		boolean allApproved = true;
+		List<UserKYC> uploadedKyc = userKycRepository.findByEnrollmentId(enrollmentId);
+		for(UserKYC kyc: uploadedKyc) {
+			if(!kyc.getStatus().equals("approved")) {
+				allApproved = false;
+			}
+		}
+		if(allApproved) {
+			List<EnrollmentWorkflow> docWorkflow = enrollmentWorkflowRepository.findByEnrollmentId(enrollmentId);
+			for(EnrollmentWorkflow docWF : docWorkflow) {
+				DLWorkflowProcess wfProcess = dlWorkflowProcessesRepository.findById(docWF.getWfProcessId()).orElse(null);
+				if(wfProcess.getStepCd().equalsIgnoreCase("DOC_VERIFICATION")) {
+					docWF.setStatus("approved");
+					docWF.setComments("Docs are verified.");
+					enrollmentWorkflowRepository.save(docWF);
+					break;
+				}
+			}
 		}
 		return "Status updated";
 	}

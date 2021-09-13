@@ -3,6 +3,7 @@ package com.sap.dl.services;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import com.sap.dl.config.UserException;
@@ -34,6 +35,12 @@ public class UserLoginImplementationWithUsernamePassword implements UserLogin {
 		} catch(UserException e) {
 			throw e;
 		}
+	}
+
+	@Override
+	public boolean authenticate(HttpHeaders headers) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 	
 }

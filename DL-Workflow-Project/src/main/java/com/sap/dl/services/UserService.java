@@ -53,6 +53,14 @@ public class UserService {
 		if(existingUser!=null) {
 			throw new UserException("DUPLICATE_USER", "The given phone number and email exist in our record.");
 		}
+		existingUser = userRpository.findByEmail(user.getEmail());
+		if(existingUser!=null) {
+			throw new UserException("DUPLICATE_USER", "The given email exist in our record.");
+		}
+		existingUser = userRpository.findByContactNumber(user.getContactNumber());
+		if(existingUser!=null) {
+			throw new UserException("DUPLICATE_USER", "The given phone number exist in our record.");
+		}
 		long seq = userRpository.generateSequence();
 		user.setUser_id("U"+seq);
 		user.setStatus("created");
