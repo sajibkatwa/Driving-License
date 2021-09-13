@@ -5,6 +5,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -130,13 +132,17 @@ public class AdminController {
 	}
 	
 	@PostMapping("/approveKyc/{enrollmentId}")
-	public String approveKyc(@PathVariable long enrollmentId, @RequestBody Map<String, String> statusMap) {
-		
-		for(Map.Entry<String, String> e : statusMap.entrySet()) {
-			userKycRepository.updateKycStatus(Long.parseLong(e.getKey()), e.getValue());
+	public String approveKyc(@PathVariable long enrollmentId, @RequestBody Map<Long, String> statusMap) {
+		List<UserKYC> uploadedKyc = userKycRepository.findByEnrollmentId(enrollmentId);
+		Set<Long> kycIdSet = uploadedKyc.stream().map(m -> m.getKyc_id()).collect(Collectors.toSet());
+		if(!statusMap.keySet().containsAll(kycIdSet)) {
+			throw new ProjectException("ENROLMENTID_KYCID_MISMATCH", "The given kyc ids don't belong to given Enrolment id.");
+		}
+		for(Map.Entry<Long, String> e : statusMap.entrySet()) {
+			userKycRepository.updateKycStatus(e.getKey(), e.getValue());
 		}
 		boolean allApproved = true;
-		List<UserKYC> uploadedKyc = userKycRepository.findByEnrollmentId(enrollmentId);
+		
 		for(UserKYC kyc: uploadedKyc) {
 			if(!kyc.getStatus().equals("approved")) {
 				allApproved = false;
