@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -76,7 +78,11 @@ public class UserService {
 		return user.getUser_id();
 	}
 	
+	@Transactional
 	public EnrollmentRecord enrollForDL(EnrollmentRecord enrollmentRecord) {
+		List<EnrollmentRecord> prevRecs = enrollmentRecordRepository.findByUserIdOrderByEnrollMentdateDesc(enrollmentRecord.getUserId());
+		EnrollmentRecord lastRecord = prevRecs!=null && !prevRecs.isEmpty() ? prevRecs.get(0) : null;
+		
 		if(enrollmentRecord.getEnrollMentdate()==null)
 			enrollmentRecord.setEnrollMentdate(new Date());
 		enrollmentRecord = enrollmentRecordRepository.save(enrollmentRecord);
@@ -108,12 +114,27 @@ public class UserService {
 //		defaultWorkflow.setStatus("created");
 //		defaultWorkflow.setEnrollmentId(enrollmentRecord.getEnrollment_Id());
 //		workflowList.add(defaultWorkflow);
-		
+		UserKYC pAddressProof = null;
+		UserKYC cAddressProof = null;
+		if(lastRecord!=null) {
+			pAddressProof = userKycRepository.findByEnrollmentIdAndDocFor(lastRecord.getEnrollment_Id(), "approved", "Permanent Address Proof");
+			cAddressProof = userKycRepository.findByEnrollmentIdAndDocFor(lastRecord.getEnrollment_Id(), "approved", "Present Address Proof");
+		}
 		for(DLWorkflowProcess process : processes) {
 			if(process.getStepCd().equalsIgnoreCase("DOC_UPLOAD")) {
 				UserKYC kycReq = new UserKYC();
 				kycReq.setDocFor(process.getReqType());
 				kycReq.setEnrollmentId(enrollmentRecord.getEnrollment_Id());
+				
+				if(process.getReqType().equalsIgnoreCase("Permanent Address Proof") && pAddressProof!=null) {
+					kycReq.setStatus("approved");
+					kycReq.setDoc(pAddressProof.getDoc());
+				}
+				if(process.getReqType().equalsIgnoreCase("Present Address Proof") && cAddressProof!=null) {
+					kycReq.setStatus("approved");
+					kycReq.setDoc(cAddressProof.getDoc());
+				}
+				
 				kycReqs.add(kycReq);
 			} else {
 				EnrollmentWorkflow workflow = new EnrollmentWorkflow();

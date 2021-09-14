@@ -1,5 +1,6 @@
 package com.sap.dl.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -70,12 +71,19 @@ public class CommonController {
 	
 	@GetMapping("/enrollmentTypes")
 	public List<EnrollmentType> listOfEnrollmentTypes(){
-		return enrollmentTypeRepository.findAll();
+		List<EnrollmentType> types = new ArrayList<>();
+		types = enrollmentTypeRepository.findAll();
+		for(int i=0; i<types.size(); i++) {
+			VehicleType vehicle = vehicleDetailsRepository.findById(types.get(i).getVehicleTypeId()).orElse(null);
+			vehicle.setDefinedProcess(new ArrayList<>());
+			types.get(i).setVehicleTypeDesc(vehicle);
+		}
+		return types;
 	}
 
 	@GetMapping("/enrollments/{userId}")
 	public List<EnrollmentRecord> listOfEnrollmentsForUser(@PathVariable String userId){
-		return enrollmentRecordRepository.findByUserId(userId);
+		return enrollmentRecordRepository.findByUserIdOrderByEnrollMentdateDesc(userId);
 	}
 	
 	@GetMapping("/kycDetails")

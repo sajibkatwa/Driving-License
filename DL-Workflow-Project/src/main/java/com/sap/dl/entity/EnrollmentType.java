@@ -7,6 +7,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import lombok.Data;
 
@@ -32,4 +33,7 @@ public class EnrollmentType {
 	
 	@Column(name="COST")
 	private double cost;
+	
+	@Transient
+	private VehicleType vehicleTypeDesc;
 }

@@ -2,6 +2,7 @@ package com.sap.dl.controller;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -143,6 +144,12 @@ public class AdminController {
 				}
 			}
 			if(isWorkflowApproved) {
+				record.setDlIssueDt(new Date());
+				Calendar c = Calendar.getInstance();
+				c.setTime(new Date());
+				c.add(Calendar.YEAR, 20);
+				record.setDlValidTill(c.getTime());
+				
 				enrollmentRecordRepository.save(record);
 				issueDLService.issueDL(record);
 			}

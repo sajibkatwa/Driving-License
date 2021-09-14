@@ -31,7 +31,7 @@ public class DrivingLicense {
 	@Column(name="DL_DOC")
 	private byte[] dlDoc;
 	
-	@OneToMany(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
+	@OneToMany(fetch = FetchType.LAZY, cascade=CascadeType.PERSIST)
 	@JoinColumn(name = "LICENSE_ID")
 	@OrderBy("dlIssueDt DESC")
 	List<EnrollmentRecord> enrollmentRecords;

@@ -2,6 +2,7 @@ package com.sap.dl.entity;
 
 import java.util.Date;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -14,6 +15,9 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
@@ -33,6 +37,8 @@ public class EnrollmentRecord {
 	private long enrollmentTypeId;
 	
 	@Temporal(TemporalType.DATE)
+	@DateTimeFormat(pattern="dd/MM/yyyy")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
 	@Column(name="ENROLLMENT_DATE")
 	private Date enrollMentdate;
 	
@@ -43,10 +49,14 @@ public class EnrollmentRecord {
 	private String dlStatus;
 	
 	@Temporal(TemporalType.DATE)
+	@DateTimeFormat(pattern="dd/MM/yyyy")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
 	@Column(name="ISSUE_DT")
 	private Date dlIssueDt;
 	
 	@Temporal(TemporalType.DATE)
+	@DateTimeFormat(pattern="dd/MM/yyyy")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
 	@Column(name="VALID_TILL")
 	private Date dlValidTill;
 	
@@ -54,7 +64,7 @@ public class EnrollmentRecord {
 	private String comments;
 	
 	@JsonIgnore
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "LICENSE_ID", insertable = false, updatable = false)
 	private DrivingLicense licenseDetails;
 

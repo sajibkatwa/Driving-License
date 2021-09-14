@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -19,10 +18,18 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
+
+import com.google.gson.Gson;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
 import com.itextpdf.html2pdf.HtmlConverter;
 import com.sap.dl.config.ProjectException;
 import com.sap.dl.dto.DLDetailsForPDF;
 import com.sap.dl.dto.DlTypeDetailsForPDF;
+import com.sap.dl.dto.QRcodeDTO;
 import com.sap.dl.entity.Address;
 import com.sap.dl.entity.DrivingLicense;
 import com.sap.dl.entity.EnrollmentRecord;
@@ -57,6 +64,7 @@ public class IssueDLService {
 	private static final String ALPHABET = "0123456789";
 	private final Random rng = new SecureRandom();
 
+	@Transactional
 	public void issueDL(EnrollmentRecord enrollment) {
 		DrivingLicense dl = drivingLicenseRepository.findByUserId(enrollment.getUserId());
 
@@ -66,12 +74,8 @@ public class IssueDLService {
 			dl.setLicenseId(dlNo);
 			dl.setUserId(enrollment.getUserId());
 		}
-
-		enrollment.setDlIssueDt(new Date());
-		Calendar c = Calendar.getInstance();
-		c.setTime(new Date());
-		c.add(Calendar.YEAR, 20);
-		enrollment.setDlValidTill(c.getTime());
+		
+//		dl = drivingLicenseRepository.save(dl);
 
 		List<EnrollmentRecord> previousEnrollments = dl.getEnrollmentRecords();
 		if (previousEnrollments == null || previousEnrollments.isEmpty())
@@ -100,7 +104,8 @@ public class IssueDLService {
 	public byte[] generateDlPDF(String userId, DrivingLicense dlObj) {
 		List<EnrollmentRecord> enrollments = dlObj.getEnrollmentRecords();
 		NewUser user = newUserRepository.findById(userId).orElse(null);
-		Address address = user.getAddresses().stream().filter(a -> a.getAddressType().equalsIgnoreCase("C")).findAny().orElse(null);
+		Address address = user.getAddresses().stream().filter(a -> a.getAddressType().equalsIgnoreCase("C")).findAny()
+				.orElse(null);
 
 		UserKYC photoKyc = userKycRepository.findByEnrollmentIdAndDocFor(enrollments.get(0).getEnrollment_Id(),
 				"approved", "Photo");
@@ -112,15 +117,18 @@ public class IssueDLService {
 
 		DLDetailsForPDF dlDetails = new DLDetailsForPDF();
 		dlDetails.setDlNo(dlObj.getLicenseId());
-		dlDetails.setPhoto("data:image/jpeg;base64,"+ new String(photoByte));
-		dlDetails.setSignature("data:image/jpeg;base64,"+ new String(signatureByte));
+		dlDetails.setPhoto("data:image/jpeg;base64," + new String(photoByte));
+		dlDetails.setSignature("data:image/jpeg;base64," + new String(signatureByte));
 		dlDetails.setName(user.getFirstName() + " "
 				+ (user.getMiddleName() != null || "".equalsIgnoreCase(user.getMiddleName())
 						? user.getMiddleName() + " "
 						: "")
 				+ user.getLastName());
 		dlDetails.setSdOf(user.getFatherOrSpouseName());
-		
+		dlDetails.setSystemDt(new SimpleDateFormat("dd-MM-yyyy").format(new Date()));
+		dlDetails.setDob(new SimpleDateFormat("dd-MM-yyyy").format(user.getDob()));
+		dlDetails.setBloodGroup(user.getBloodGroup());
+
 		List<String> addressLines = new ArrayList<>();
 		addressLines.add(address.getHouse());
 		addressLines.add(address.getStreet());
@@ -128,7 +136,7 @@ public class IssueDLService {
 		addressLines.add(address.getCity());
 		addressLines.add(address.getState());
 		addressLines.add(address.getPincode());
-		
+
 		dlDetails.setAddressLines(addressLines);
 
 		List<DlTypeDetailsForPDF> typeDetails = new ArrayList<>();
@@ -145,13 +153,18 @@ public class IssueDLService {
 			typeDetails.add(dlType);
 		}
 		dlDetails.setEnrollments(typeDetails);
+
 		try {
+			generateQRcode(dlDetails);
 			byte[] dlPDFByte = generatePdfFromHtml(dlDetails);
 			dlObj.setDlDoc(dlPDFByte);
 			drivingLicenseRepository.save(dlObj);
 			return dlPDFByte;
 		} catch (IOException e) {
 			throw new ProjectException("DL_PDF_ERROR", "Error while generating DL PDF.");
+		} catch (WriterException e) {
+			e.printStackTrace();
+			throw new ProjectException("QR_PDF_ERROR", "Error while generating QR.");
 		}
 	}
 
@@ -173,9 +186,27 @@ public class IssueDLService {
 		String html = parseThymeleafTemplate(dlDetails);
 		System.out.println(html);
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		
+
 		HtmlConverter.convertToPdf(html, outputStream);
 
 		return outputStream.toByteArray();
+	}
+
+	private void generateQRcode(DLDetailsForPDF dlDetails) throws IOException, WriterException {
+		QRcodeDTO dto = new QRcodeDTO();
+		dto.setDlNo(dlDetails.getDlNo());
+		dto.setName(dlDetails.getName());
+		dto.setDob(dlDetails.getDob());
+		dto.setBloodGroup(dlDetails.getBloodGroup());
+		String dtoJson = new Gson().toJson(dto);
+		ByteArrayOutputStream outstream = new ByteArrayOutputStream();
+
+		BitMatrix matrix = new MultiFormatWriter().encode(new String(dtoJson.getBytes("UTF-8"), "UTF-8"),
+				BarcodeFormat.QR_CODE, 100, 100);
+
+		MatrixToImageWriter.writeToStream(matrix, "png", outstream);
+
+		byte[] qrByte = Base64Utils.encode(outstream.toByteArray());
+		dlDetails.setQrCode("data:image/jpeg;base64," + new String(qrByte));
 	}
 }
